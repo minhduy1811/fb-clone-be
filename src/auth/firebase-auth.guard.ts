@@ -1,0 +1,31 @@
+// src/auth/firebase-auth.guard.ts
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { FirebaseService } from '../firebase/firebase.service';
+
+@Injectable()
+export class FirebaseAuthGuard implements CanActivate {
+    constructor(private readonly firebaseService: FirebaseService) { }
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const request = context.switchToHttp().getRequest();
+        const authHeader = request.headers.authorization;
+
+        if (!authHeader) {
+            throw new UnauthorizedException('Missing Authorization header');
+        }
+
+        const token = authHeader.split(' ')[1];
+        if (!token) {
+            throw new UnauthorizedException('Invalid Authorization header');
+        }
+
+        try {
+            const decodedToken = await this.firebaseService.verifyToken(token);
+            request.user = decodedToken; // gắn user đã decode vào request
+            return true;
+        } catch (error) {
+            console.error('Token verification failed:', error);
+            throw new UnauthorizedException('Invalid or expired token');
+        }
+    }
+}
