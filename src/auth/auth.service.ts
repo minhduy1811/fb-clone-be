@@ -1,10 +1,46 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Response } from 'express';
 import { FirebaseService } from '../firebase/firebase.service';
-import { CreateUserDto } from './dto/create-user.dto'
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
     constructor(private readonly firebaseService: FirebaseService) { }
+
+    async createSession(idToken: string, res: Response) {
+        if (!idToken) {
+            throw new ForbiddenException('Thiếu ID token');
+        }
+
+        const auth = this.firebaseService.getAuth();
+        const expiresIn = 60 * 60 * 24 * 7 * 1000; // 7 ngày
+
+        try {
+            // Xác minh token và tạo cookie
+            const decoded = await auth.verifyIdToken(idToken);
+            const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
+
+            res.cookie('session', sessionCookie, {
+                httpOnly: true,
+                secure: false,
+                maxAge: expiresIn,
+                sameSite: 'lax',
+                path: '/',
+            });
+            console.log("✅ Setting cookie session for uid:", decoded.uid);
+
+            return { message: 'Session created successfully', uid: decoded.uid };
+        } catch (error) {
+            console.error('Error creating session:', error);
+            throw new ForbiddenException('ID token không hợp lệ');
+        }
+
+    }
+
+    async signupWithIdToken(idToken: string, data: CreateUserDto) {
+        const decoded = await this.firebaseService.getAuth().verifyIdToken(idToken);
+        return this.registerUser(decoded.uid, data);
+    }
 
     async registerUser(uid: string, data: CreateUserDto) {
         const db = this.firebaseService.getFirestore();
@@ -24,11 +60,22 @@ export class AuthService {
         const db = this.firebaseService.getFirestore();
         const userDoc = await db.collection('users').doc(uid).get();
 
-        if (!userDoc.exists) {
-            return { message: 'User not found' };
-        }
-
+        if (!userDoc.exists) throw new NotFoundException('User not found');
         return userDoc.data();
+    }
+
+    async logout(uid: string, res: Response) {
+        const auth = this.firebaseService.getAuth();
+
+        try {
+            // Revoke all session cookies for this user
+            await auth.revokeRefreshTokens(uid);
+            res.clearCookie('session', { path: '/' });
+            return { message: 'Đăng xuất thành công' };
+        } catch (error) {
+            console.error('Error revoking tokens:', error);
+            throw new ForbiddenException('Không thể đăng xuất');
+        }
     }
 
     async isAdmin(uid: string): Promise<boolean> {
@@ -43,9 +90,6 @@ export class AuthService {
         return role === 'admin';
     }
 
-    /**
-     * Xác minh quyền admin - dùng trong các route quan trọng
-     */
     async assertAdmin(uid: string) {
         const isAdmin = await this.isAdmin(uid);
         if (!isAdmin) {

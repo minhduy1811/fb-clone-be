@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { FirebaseService } from "src/firebase/firebase.service";
 import { CreatePostDto } from "./dto/create-posts.dto";
+import { auth } from "firebase-admin";
 
 @Injectable()
 export class PostsService {
@@ -30,6 +31,7 @@ export class PostsService {
             authorId: uid,
             authorName: userData?.displayName || 'Ẩn danh',
             authorAvatar: userData?.photoURL || null,   // tùy chọn, hiển thị avatar
+            authorMail: userData?.email || 'unknown', // email tác giả
             content: data.content.trim(),
             imageUrls: imageArray,            // đảm bảo là mảng
             likes: [],                                  // khởi tạo mảng rỗng
@@ -72,5 +74,24 @@ export class PostsService {
             .get();
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
-
+    async deletePost(id: string) {
+        const db = this.firebaseService.getFirestore();
+        await db.collection('posts').doc(id).delete();
+        return { message: 'Post deleted successfully' };
+    }
+    async updatePost(id: string, data: CreatePostDto) {
+        const db = this.firebaseService.getFirestore();
+        const postRef = db.collection('posts').doc(id);
+        await postRef.update({
+            content: data.content.trim(),
+            imageUrls: Array.isArray(data.imageUrls)
+                ? data.imageUrls
+                : data.imageUrls
+                    ? [data.imageUrls]
+                    : [],
+            updatedAt: new Date().toISOString(),
+        });
+        const updatedPost = await postRef.get();
+        return { id: updatedPost.id, ...updatedPost.data() };
+    }
 }

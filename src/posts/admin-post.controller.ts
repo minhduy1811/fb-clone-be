@@ -1,24 +1,23 @@
 import { Controller, Get, Delete, Patch, Param, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
+import { FirebaseAuthGuard } from '../common/guards/firebase-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { FirebaseSessionGuard } from 'src/common/guards/firebase-session.guard';
 
-@UseGuards(FirebaseAuthGuard, RolesGuard)
+@UseGuards(FirebaseSessionGuard, RolesGuard)
 @Roles('admin')
 @Controller('admin/posts')
 export class AdminPostsController {
     constructor(private readonly postsService: PostsService) { }
-
     @Get()
     async getAllPosts() {
         return this.postsService.getAllPosts(); // Lấy tất cả bài viết
     }
-
-    // @Delete(':id')
-    // async deletePost(@Param('id') id: string) {
-    //     return this.postsService.deletePost(id); // Xóa bài viết bất kỳ
-    // }
+    @Delete(':id')
+    async deletePost(@Param('id') id: string) {
+        return this.postsService.deletePost(id); // Xóa bài viết bất kỳ
+    }
 
     // @Patch(':id/flag')
     // async flagPost(@Param('id') id: string) {

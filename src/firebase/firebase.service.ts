@@ -47,4 +47,12 @@ export class FirebaseService implements OnModuleInit {
             throw error;
         }
     }
+    async verifySessionCookie(sessionCookie: string): Promise<admin.auth.DecodedIdToken> {
+        try {
+            return await admin.auth().verifySessionCookie(sessionCookie, true);
+        } catch (error) {
+            console.error('❌ Lỗi verifySessionCookie:', error);
+            throw error;
+        }
+    }
 }

@@ -1,19 +1,19 @@
-import { Controller, Post, Get, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { CommentsService } from './comments.service';
-import { FirebaseAuthGuard } from "src/auth/firebase-auth.guard";
+import { FirebaseSessionGuard } from "src/common/guards/firebase-session.guard";
 
 @Controller('posts/:postId/comments')
 export class CommentsController {
     constructor(private readonly commentsService: CommentsService) { }
 
-    @UseGuards(FirebaseAuthGuard)
+    @UseGuards(FirebaseSessionGuard)
     @Post()
     addComment(@Param('postId') postId: string, @Body() body: any) {
         return this.commentsService.addComment(postId, body);
     }
-
+    @UseGuards(FirebaseSessionGuard)
     @Get()
-    getComments(@Param('postId') postId: string) {
+    async getComments(@Param('postId') postId: string) {
         return this.commentsService.getComments(postId);
     }
 
