@@ -19,13 +19,14 @@ export class AuthService {
             // Xác minh token và tạo cookie
             const decoded = await auth.verifyIdToken(idToken);
             const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
-
+            const isProduction = process.env.NODE_ENV === 'production';
             res.cookie('session', sessionCookie, {
                 httpOnly: true,
-                secure: false,
+                secure: isProduction,              // ✅ chỉ bật HTTPS khi deploy
+                sameSite: isProduction ? 'none' : 'lax', // ✅ cần 'none' để cookie hoạt động cross-domain
                 maxAge: expiresIn,
-                sameSite: 'lax',
                 path: '/',
+                domain: isProduction ? 'fb-meta-80ef3.web.app' : undefined, // ✅ domain FE của bạn
             });
             console.log("✅ Setting cookie session for uid:", decoded.uid);
 
@@ -67,11 +68,13 @@ export class AuthService {
     async logout(res: Response) {
         try {
             // Xóa cookie 'session'
+            const isProduction = process.env.NODE_ENV === 'production';
             res.clearCookie('session', {
                 httpOnly: true,
-                secure: false, // 🔥 nếu bạn deploy production, nhớ đổi thành true
-                sameSite: 'lax',
+                secure: isProduction,              // ✅ chỉ bật HTTPS khi deploy
+                sameSite: isProduction ? 'none' : 'lax', // ✅ cần 'none' để cookie hoạt động cross-domain
                 path: '/',
+                domain: isProduction ? 'fb-meta-80ef3.web.app' : undefined,
             });
 
             console.log('✅ Session cookie cleared');
