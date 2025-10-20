@@ -64,16 +64,20 @@ export class AuthService {
         return userDoc.data();
     }
 
-    async logout(uid: string, res: Response) {
-        const auth = this.firebaseService.getAuth();
-
+    async logout(res: Response) {
         try {
-            // Revoke all session cookies for this user
-            await auth.revokeRefreshTokens(uid);
-            res.clearCookie('session', { path: '/' });
+            // Xóa cookie 'session'
+            res.clearCookie('session', {
+                httpOnly: true,
+                secure: false, // 🔥 nếu bạn deploy production, nhớ đổi thành true
+                sameSite: 'lax',
+                path: '/',
+            });
+
+            console.log('✅ Session cookie cleared');
             return { message: 'Đăng xuất thành công' };
         } catch (error) {
-            console.error('Error revoking tokens:', error);
+            console.error('Error clearing session cookie:', error);
             throw new ForbiddenException('Không thể đăng xuất');
         }
     }
