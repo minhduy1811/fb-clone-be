@@ -26,7 +26,6 @@ export class AuthService {
                 sameSite: isProduction ? 'none' : 'lax', // ✅ cần 'none' để cookie hoạt động cross-domain
                 maxAge: expiresIn,
                 path: '/',
-                domain: isProduction ? 'fb-meta-80ef3.web.app' : undefined, // ✅ domain FE của bạn
             });
             console.log("✅ Setting cookie session for uid:", decoded.uid);
 
@@ -35,7 +34,6 @@ export class AuthService {
             console.error('Error creating session:', error);
             throw new ForbiddenException('ID token không hợp lệ');
         }
-
     }
 
     async signupWithIdToken(idToken: string, data: CreateUserDto) {
@@ -74,7 +72,6 @@ export class AuthService {
                 secure: isProduction,              // ✅ chỉ bật HTTPS khi deploy
                 sameSite: isProduction ? 'none' : 'lax', // ✅ cần 'none' để cookie hoạt động cross-domain
                 path: '/',
-                domain: isProduction ? 'fb-meta-80ef3.web.app' : undefined,
             });
 
             console.log('✅ Session cookie cleared');
