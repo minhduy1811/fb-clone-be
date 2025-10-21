@@ -8,19 +8,10 @@ import { Response, Request } from 'express';
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
-
-    // 🧾 Route đăng ký (chỉ cho người đã xác thực qua Firebase)
     @Post('signup')
     async signup(@Body() body: CreateUserDto) {
         return this.authService.signupWithIdToken(body.idToken, body);
     }
-
-    // @Get('me')
-    // @UseGuards(FirebaseSessionGuard)
-    // async getMe(@Req() req) {
-    //     const uid = (req as any).user.uid;
-    //     return this.authService.getUser(uid);
-    // }
     @Post('login')
     async login(
         @Body('idToken') idToken: string,
@@ -28,8 +19,6 @@ export class AuthController {
     ) {
         return this.authService.createSession(idToken, res);
     }
-
-    // 🚪 Đăng xuất (xoá cookie)
     @Post('logout')
     async logout(@Res({ passthrough: true }) res: Response) {
         return this.authService.logout(res);

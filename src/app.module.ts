@@ -15,6 +15,6 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(FirebaseSessionMiddleware)
-      .forRoutes('posts', 'admin'); // Áp dụng middleware cho các route cần bảo vệ
+      .forRoutes('posts', 'admin');
   }
 }

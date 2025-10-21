@@ -1,7 +1,6 @@
 import { CreatePostDto } from "./dto/create-posts.dto";
 import { Post, Req, Get, Body, Controller, UseGuards, UseInterceptors, UploadedFile, Delete, Param, Put } from "@nestjs/common";
 import { PostsService } from './posts.service';
-import { FirebaseAuthGuard } from "src/common/guards/firebase-auth.guard";
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FirebaseSessionGuard } from "src/common/guards/firebase-session.guard";
@@ -33,7 +32,7 @@ export class PostsController {
     @UseGuards(FirebaseSessionGuard)
     @Delete(':id')
     async deletePost(@Param('id') id: string) {
-        return this.postsService.deletePost(id); // Xóa bài viết bất kỳ
+        return this.postsService.deletePost(id);
     }
     @UseGuards(FirebaseSessionGuard)
     @Put(':id')

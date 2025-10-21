@@ -13,17 +13,16 @@ export class AuthService {
         }
 
         const auth = this.firebaseService.getAuth();
-        const expiresIn = 60 * 60 * 24 * 7 * 1000; // 7 ngày
+        const expiresIn = 60 * 60 * 24 * 7 * 1000;
 
         try {
-            // Xác minh token và tạo cookie
             const decoded = await auth.verifyIdToken(idToken);
             const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
             const isProduction = process.env.NODE_ENV === 'production';
             res.cookie('session', sessionCookie, {
                 httpOnly: true,
-                secure: isProduction,              // ✅ chỉ bật HTTPS khi deploy
-                sameSite: isProduction ? 'none' : 'lax', // ✅ cần 'none' để cookie hoạt động cross-domain
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax',
                 maxAge: expiresIn,
                 path: '/',
             });
@@ -65,12 +64,11 @@ export class AuthService {
 
     async logout(res: Response) {
         try {
-            // Xóa cookie 'session'
             const isProduction = process.env.NODE_ENV === 'production';
             res.clearCookie('session', {
                 httpOnly: true,
-                secure: isProduction,              // ✅ chỉ bật HTTPS khi deploy
-                sameSite: isProduction ? 'none' : 'lax', // ✅ cần 'none' để cookie hoạt động cross-domain
+                secure: isProduction,
+                sameSite: isProduction ? 'none' : 'lax',
                 path: '/',
             });
 

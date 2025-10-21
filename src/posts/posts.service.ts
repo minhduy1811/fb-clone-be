@@ -8,16 +8,11 @@ export class PostsService {
     constructor(private readonly firebaseService: FirebaseService) { }
     async createPost(uid: string, data: CreatePostDto) {
         const db = this.firebaseService.getFirestore();
-
-        // 🧩 Kiểm tra user tồn tại
         const userDoc = await db.collection('users').doc(uid).get();
         if (!userDoc.exists) {
             throw new Error('User not found');
         }
-
         const userData = userDoc.data();
-
-        // 🔑 Tạo sẵn id để dùng luôn trong post
         const postId = db.collection('posts').doc().id;
 
         const imageArray = Array.isArray(data.imageUrls)
@@ -25,22 +20,18 @@ export class PostsService {
             : data.imageUrls
                 ? [data.imageUrls]
                 : [];
-        // 🧱 Dữ liệu bài viết mới
         const newPost = {
-            id: postId,                                 // ✅ thêm id trực tiếp
+            id: postId,
             authorId: uid,
             authorName: userData?.displayName || 'Ẩn danh',
-            authorAvatar: userData?.photoURL || null,   // tùy chọn, hiển thị avatar
-            authorMail: userData?.email || 'unknown', // email tác giả
+            authorAvatar: userData?.photoURL || null,
+            authorMail: userData?.email || 'unknown',
             content: data.content.trim(),
-            imageUrls: imageArray,            // đảm bảo là mảng
-            likes: [],                                  // khởi tạo mảng rỗng
-            commentCount: 0,                            // dễ thống kê
+            imageUrls: imageArray,
+            likes: [],
             createdAt: new Date().toISOString(),
             updatedAt: null,
         };
-
-        // 💾 Lưu vào Firestore
         await db.collection('posts').doc(postId).set(newPost);
 
         console.log(`✅ New post created by ${uid}: ${data.imageUrls}`);

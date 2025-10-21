@@ -1,4 +1,3 @@
-// src/auth/roles.guard.ts
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from './roles.decorator';
@@ -18,7 +17,7 @@ export class RolesGuard implements CanActivate {
         ]);
 
         if (!requiredRoles || requiredRoles.length === 0) {
-            return true; // không cần role đặc biệt
+            return true;
         }
 
         const request = context.switchToHttp().getRequest();

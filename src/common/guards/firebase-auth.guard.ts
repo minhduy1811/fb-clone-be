@@ -21,7 +21,7 @@ export class FirebaseAuthGuard implements CanActivate {
 
         try {
             const decodedToken = await this.firebaseService.verifyToken(token);
-            request.user = decodedToken; // gắn user đã decode vào request
+            request.user = decodedToken;
             return true;
         } catch (error) {
             console.error('Token verification failed:', error);

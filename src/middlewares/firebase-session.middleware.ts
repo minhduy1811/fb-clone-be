@@ -15,7 +15,7 @@ export class FirebaseSessionMiddleware implements NestMiddleware {
 
         try {
             const decoded = await this.firebaseService.verifySessionCookie(sessionCookie);
-            (req as any).user = decoded; // gắn user vào request
+            (req as any).user = decoded;
             next();
         } catch (err) {
             return res.status(401).json({ message: 'Invalid session cookie' });
