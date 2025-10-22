@@ -6,15 +6,16 @@ import { AdminService } from './admin.service';
 
 @Controller('admin')
 @Roles('admin')
-@UseGuards(FirebaseAuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 export class AdminController {
     constructor(private readonly adminService: AdminService) { }
 
-
+    @UseGuards(FirebaseAuthGuard)
     @Get('users')
     async getAllUsers(@Req() req) {
         return this.adminService.getAllUsers();
     }
+
     @Get('check')
     async checkAdmin() {
         return { valid: true, role: 'admin' };
